@@ -1,3 +1,3 @@
-import colors from "./colors";
+import {monochromeColors} from "./colors";
 import fontType from "./fonts";
-export {colors, fontType}; 
+export {monochromeColors, fontType};
