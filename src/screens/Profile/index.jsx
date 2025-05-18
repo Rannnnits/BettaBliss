@@ -6,12 +6,15 @@ import {
   Image,
   ScrollView,
   FlatList,
+  TouchableOpacity,
 } from 'react-native';
 import {DirectInbox, Home, SearchNormal} from 'iconsax-react-native';
 import {fontType, monochromeColors} from '../../theme';
-import { kontesList } from '../../data';
+import {useNavigation} from '@react-navigation/native';
+import {kontesList} from '../../data';
 
 const Profile = () => {
+  const navigation = useNavigation();
   const photos = [
     {
       id: '1',
@@ -43,7 +46,6 @@ const Profile = () => {
 
   return (
     <ScrollView style={styles.container}>
-      {/* Header */}
       <View style={styles.headerContainer}>
         <Image
           source={{
@@ -53,7 +55,11 @@ const Profile = () => {
           blurRadius={2}
         />
         <Text style={styles.headerTitle}>My Profile</Text>
-        <SearchNormal style={styles.searchIcon} size={20} color={monochromeColors.white()} />
+        <SearchNormal
+          style={styles.searchIcon}
+          size={20}
+          color={monochromeColors.white()}
+        />
         <View style={styles.avatarWrapper}>
           <Image
             source={{
@@ -64,7 +70,6 @@ const Profile = () => {
         </View>
       </View>
 
-      {/* Stats */}
       <View style={styles.statsContainer}>
         <View style={styles.statsBox}>
           <Text style={styles.statsNumber}>518.3 K</Text>
@@ -76,7 +81,6 @@ const Profile = () => {
         </View>
       </View>
 
-      {/* Info */}
       <View style={styles.infoSection}>
         <Text style={styles.name}>Albert Ross</Text>
         <Text style={styles.role}>Cupang Kontes</Text>
@@ -99,7 +103,6 @@ const Profile = () => {
         </View>
       </View>
 
-      {/* Photos */}
       <View style={styles.mediaSection}>
         <Text style={styles.sectionTitle}>Photos</Text>
         <FlatList
@@ -113,11 +116,19 @@ const Profile = () => {
         />
       </View>
 
-      {/* Videos */}
       <View style={styles.mediaSection}>
-        <Text style={styles.sectionTitle}>Product</Text>
+        <View style={styles.productHeader}>
+          <Text style={styles.sectionTitle}>Product</Text>
+          <TouchableOpacity
+            style={styles.addButton}
+            onPress={() => navigation.navigate('AddProduk')}>
+            <Text style={styles.addButtonText}>Add Product</Text>
+          </TouchableOpacity>
+        </View>
+
         <FlatList
           data={kontesList}
+          scrollEnabled={false}
           renderItem={renderItem}
           keyExtractor={item => item.id}
         />
@@ -223,12 +234,30 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   mediaSection: {
+    marginBottom: 20,
     paddingHorizontal: 24,
   },
   sectionTitle: {
     fontSize: 16,
     fontWeight: 'bold',
     marginBottom: 10,
+  },
+  productHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  addButton: {
+    backgroundColor: monochromeColors.grey(),
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  addButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 14,
   },
   mediaImage: {
     width: 100,

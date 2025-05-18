@@ -1,11 +1,13 @@
-import { FlatList, Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Image, Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Heart, ShoppingCart } from 'iconsax-react-native';
 import { fontType, monochromeColors } from '../theme';
+import {useNavigation} from '@react-navigation/native';
 import { products } from '../data';
 import { useState } from 'react';
 
 const VerticalItem = () => {
   const [likedItems, setLikedItems] = useState({});
+  const navigation = useNavigation();
 
   const toggleLike = (id) => {
     setLikedItems((prev) => ({
@@ -15,7 +17,7 @@ const VerticalItem = () => {
   };
 
   const renderItem = ({ item }) => (
-    <View style={styles.cardItem}>
+    <TouchableOpacity style={styles.cardItem} onPress={() => navigation.navigate('ProdukDetail', {productId: item.id})}>
       <Image style={styles.cardImage} source={{ uri: item.image }} />
       <View style={styles.cardContent}>
         <View style={styles.cardHeader}>
@@ -43,7 +45,7 @@ const VerticalItem = () => {
           <Text style={styles.buyButtonText}>Beli Sekarang</Text>
         </Pressable>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 
   return (
