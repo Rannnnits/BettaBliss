@@ -5,6 +5,7 @@ import {Home, Cart, Profile, ProdukDetail} from '../screens';
 import {Home2, ProfileCircle, ShoppingCart} from 'iconsax-react-native'; 
 import { fontType, monochromeColors } from '../theme';
 import AddProduk from '../screens/AddProduk';
+import EditProduk from '../screens/EditProduk';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -98,6 +99,18 @@ const Router = () => {
       <Stack.Screen
         name="AddProduk"
         component={AddProduk}
+        options={{
+          headerShown: false, 
+          animationEnabled: true,
+          animationTypeForReplace: 'pop',
+          gestureEnabled: true,
+          gestureDirection : 'horizontal',
+          ...TransitionPresets.SlideFromRightIOS,
+        }}
+      />
+      <Stack.Screen
+        name="EditProduk"
+        component={EditProduk}
         options={{
           headerShown: false, 
           animationEnabled: true,

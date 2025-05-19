@@ -1,23 +1,62 @@
-import React from 'react';
-import {View, Text, Image, StyleSheet, TouchableOpacity} from 'react-native';
+import React, { useEffect, useState } from 'react';
+import {View, Text, Image, StyleSheet, TouchableOpacity, Alert} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import {products} from '../../data';
 import {ArrowLeft, ShoppingCart} from 'iconsax-react-native';
 import {VerticalItem} from '../../components';
 import {FlatList} from 'react-native-gesture-handler';
 import {fontType, monochromeColors} from '../../theme';
+import axios from 'axios';
 
-const ProdukDetail = ({route}) => {
-  const {productId} = route.params;
+const ProdukDetail = ({ route }) => {
+  const { productId } = route.params;
   const navigation = useNavigation();
-  const selected = products.find(detail => detail.id === productId);
+
+  const [selected, setSelected] = useState(null);
+  const [recommendations, setRecommendations] = useState([]);
+
+  const getProductDetail = async () => {
+    try {
+      const res = await axios.get(
+        `https://682a39cdab2b5004cb3635fa.mockapi.io/api/product/${productId}`
+      );
+      setSelected(res.data);
+    } catch (err) {
+      Alert.alert('Gagal', 'Tidak bisa memuat detail produk');
+    }
+  };
+
+  const getRecommendations = async () => {
+    try {
+      const res = await axios.get(
+        'https://682a39cdab2b5004cb3635fa.mockapi.io/api/product'
+      );
+      const filtered = res.data.filter(item => item.id !== productId);
+      setRecommendations(filtered.slice(0, 5)); // ambil 5 rekomendasi
+    } catch (err) {
+      console.log('Gagal mengambil rekomendasi:', err.message);
+    }
+  };
+
+  useEffect(() => {
+    getProductDetail();
+    getRecommendations();
+  }, [productId]);
+
+  if (!selected) {
+    return (
+      <View style={styles.container}>
+        <Text>Memuat...</Text>
+      </View>
+    );
+  }
 
   return (
     <View contentContainerStyle={styles.container}>
       <FlatList
         data={products}
-        renderItem={({item}) => <VerticalItem item={item} />}
-        keyExtractor={(item, index) => index.toString()}
+        renderItem={({ item }) => <VerticalItem item={item} />}
+        keyExtractor={item => item.id}
         ListHeaderComponent={
           <>
             <TouchableOpacity
@@ -27,15 +66,17 @@ const ProdukDetail = ({route}) => {
             </TouchableOpacity>
 
             {/* Product Image */}
-            <Image source={{uri: selected.image}} style={styles.image} />
+            <Image source={{ uri: selected.image }} style={styles.image} />
 
             {/* Product Info */}
             <View style={styles.infoWrapper}>
               <Text style={styles.title}>{selected.title}</Text>
               <Text style={styles.price}>
-                Rp {selected.price.toLocaleString()}
+                Rp {Number(selected.price).toLocaleString()}
               </Text>
-              <Text style={styles.description}>{selected.description}</Text>
+              <Text style={styles.description}>
+                {selected.description || 'Tidak ada deskripsi.'}
+              </Text>
 
               <View style={featuredBetta.headerContainer}>
                 <Text style={featuredBetta.headerTitle}>
@@ -47,16 +88,18 @@ const ProdukDetail = ({route}) => {
           </>
         }
       />
+
       <TouchableOpacity
         style={[
           styles.buyButton,
-          {backgroundColor: monochromeColors.white(), paddingHorizontal: '10%'},
+          { backgroundColor: monochromeColors.white(), paddingHorizontal: '10%' },
         ]}
         onPress={() => alert('Fitur beli belum tersedia')}>
         <ShoppingCart size="24" color={monochromeColors.black()} />
       </TouchableOpacity>
+
       <TouchableOpacity
-        style={[styles.buyButton, {right: 0, paddingHorizontal: '25%'}]}
+        style={[styles.buyButton, { right: 0, paddingHorizontal: '25%' }]}
         onPress={() => alert('Fitur beli belum tersedia')}>
         <Text style={styles.buyButtonText}>Beli Sekarang</Text>
       </TouchableOpacity>

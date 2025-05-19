@@ -11,33 +11,51 @@ import {
 import {fontType, monochromeColors} from '../../theme';
 import {useNavigation} from '@react-navigation/native';
 import {ArrowLeft} from 'iconsax-react-native';
+import axios from 'axios';
 
 const AddProduk = () => {
   const [title, setTitle] = useState('');
   const [price, setPrice] = useState('');
   const [quantity, setQuantity] = useState('');
   const [imageUrl, setImageUrl] = useState('');
+  const [category, setCategory] = useState('');
   const navigation = useNavigation();
 
-  const handleAddProduct = () => {
+  const handleAddProduct = async () => {
     if (!title || !price || !quantity || !imageUrl) {
       Alert.alert('Error', 'Semua kolom wajib diisi!');
       return;
     }
 
-    console.log({
-      title,
-      price,
-      quantity,
-      image: imageUrl,
-    });
+    try {
+      const newProduct = {
+        title,
+        category: 'Umum',
+        price: Number(price),
+        rating: '0',
+        sold: 0,
+        image: imageUrl,
+        createdAt: new Date().toISOString(),
+        amount: Number(quantity),
+      };
 
-    Alert.alert('Berhasil', 'Produk berhasil ditambahkan!');
+      const response = await axios.post(
+        'https://682a39cdab2b5004cb3635fa.mockapi.io/api/product',
+        newProduct,
+      );
 
-    setTitle('');
-    setPrice('');
-    setQuantity('');
-    setImageUrl('');
+      if (response.status === 201) {
+        Alert.alert('Berhasil', 'Produk berhasil ditambahkan!');
+        navigation.goBack();
+
+        setTitle('');
+        setPrice('');
+        setQuantity('');
+        setImageUrl('');
+      }
+    } catch (e) {
+      Alert.alert('Gagal', `Terjadi kesalahan: ${e.message}`);
+    }
   };
 
   return (
@@ -55,6 +73,13 @@ const AddProduk = () => {
         placeholder="Masukkan nama produk"
         value={title}
         onChangeText={setTitle}
+      />
+      <Text style={styles.label}>Kategori</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="Contoh: Elektronik"
+        value={category}
+        onChangeText={setCategory}
       />
 
       <Text style={styles.label}>Harga</Text>
@@ -99,16 +124,16 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   headerWrapper: {
-  flexDirection: 'row',
-  alignItems: 'center',
-  marginBottom: 20,
-},
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
 
-header: {
-  fontSize: 20,
-  fontWeight: 'bold',
-  marginLeft: 10,
-},
+  header: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginLeft: 10,
+  },
 
   label: {
     fontSize: 16,

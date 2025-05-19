@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -7,41 +7,109 @@ import {
   ScrollView,
   FlatList,
   TouchableOpacity,
+  Alert,
 } from 'react-native';
-import {DirectInbox, Home, SearchNormal} from 'iconsax-react-native';
+import {
+  DirectInbox,
+  Edit2,
+  Home,
+  SearchNormal,
+  Trash,
+} from 'iconsax-react-native';
 import {fontType, monochromeColors} from '../../theme';
 import {useNavigation} from '@react-navigation/native';
-import {kontesList} from '../../data';
+import axios from 'axios';
 
 const Profile = () => {
   const navigation = useNavigation();
-  const photos = [
-    {
-      id: '1',
-      uri: 'https://www.bettasplendid.com/wp-content/uploads/2017/09/Razer-Koi-Betta_8921-1.jpg',
-    },
-    {
-      id: '2',
-      uri: 'https://www.bettasplendid.com/wp-content/uploads/2017/09/Razer-Koi-Betta_8911-1.jpg',
-    },
-    {
-      id: '3',
-      uri: 'https://aquariumfishindia.com/wp-content/uploads/2023/03/Betta-crowntail-super-red-having-tags-of-Betta_yyth.jpg',
-    },
-  ];
+  const [kontesList, setKontesList] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const getProducts = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get(
+        'https://682a39cdab2b5004cb3635fa.mockapi.io/api/product',
+      );
+      setKontesList(response.data);
+    } catch (error) {
+      console.error('Gagal memuat produk:', error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Ambil data saat pertama kali komponen muncul
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      getProducts(); // Panggil ulang saat halaman difokuskan kembali
+    });
+    getProducts(); // Panggil pertama kali
+    return unsubscribe;
+  }, [navigation]);
+
+  const handleDelete = async id => {
+    Alert.alert(
+      'Konfirmasi',
+      'Apakah Anda yakin ingin menghapus produk ini?',
+      [
+        {
+          text: 'Batal',
+          style: 'cancel',
+        },
+        {
+          text: 'Hapus',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await axios.delete(
+                `https://682a39cdab2b5004cb3635fa.mockapi.io/api/product/${id}`,
+              );
+              // Refresh data (bisa dengan getProduk() atau filter manual)
+              getProducts(); // pastikan kamu punya fungsi ini
+            } catch (error) {
+              Alert.alert('Gagal', 'Produk gagal dihapus');
+            }
+          },
+        },
+      ],
+      {cancelable: true},
+    );
+  };
 
   const renderItem = ({item}) => (
-    <View style={styles.itemContainer}>
+    <TouchableOpacity
+      style={styles.itemContainer}
+      onPress={() => navigation.navigate('ProdukDetail', {productId: item.id})}>
       <Image source={{uri: item.image}} style={styles.itemImage} />
-      <View style={styles.itemDetails}>
-        <Text style={styles.itemTitle}>{item.title}</Text>
-        <Text style={styles.itemPrice}>Rp {item.price}</Text>
 
-        <View style={styles.quantityWrapper}>
-          <Text style={styles.quantityText}>Tersedia {item.quantity}</Text>
+      <View style={styles.itemDetails}>
+        <View style={styles.actionRow}>
+          <View>
+            <Text style={styles.itemTitle}>{item.title}</Text>
+            <Text style={styles.itemPrice}>
+              Rp {Number(item.price).toLocaleString()}
+            </Text>
+            <Text style={styles.itemQuantity}>Tersedia {item.amount}</Text>
+          </View>
+          <View style={styles.button}>
+            <TouchableOpacity
+              style={styles.iconButton}
+              onPress={() =>
+                navigation.navigate('EditProduk', {productId: item.id})
+              }>
+              <Edit2 size={20} color="#4CAF50" variant="Bold" />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.iconButton}
+              onPress={() => handleDelete(item.id)}>
+              <Trash size={20} color="#F44336" variant="Bold" />
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 
   return (
@@ -107,9 +175,9 @@ const Profile = () => {
         <Text style={styles.sectionTitle}>Photos</Text>
         <FlatList
           horizontal
-          data={photos}
+          data={kontesList}
           renderItem={({item}) => (
-            <Image source={{uri: item.uri}} style={styles.mediaImage} />
+            <Image source={{uri: item.image}} style={styles.mediaImage} />
           )}
           keyExtractor={item => item.id}
           showsHorizontalScrollIndicator={false}
@@ -305,5 +373,20 @@ const styles = StyleSheet.create({
     fontFamily: fontType['Pjs-Medium'],
     marginTop: 2,
     color: monochromeColors.black(),
+  },
+  actionRow: {
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  button: {
+    display: 'flex',
+    flexDirection: 'row',
+  },
+  iconButton: {
+    padding: 8,
+    backgroundColor: '#eee',
+    borderRadius: 8,
+    marginRight: 8,
   },
 });
