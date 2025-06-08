@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "954882368833",
+    "project_id": "bettabliss-e0e84",
+    "storage_bucket": "bettabliss-e0e84.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:954882368833:android:ace82484c5395977422dc0",
+        "android_client_info": {
+          "package_name": "com.bettabliss"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBtj0YQYEZgNmLGcVmjNCPY27AwdaI-Dlk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -16,9 +16,9 @@ import {
   SearchNormal,
   Trash,
 } from 'iconsax-react-native';
-import {fontType, monochromeColors} from '../../theme';
-import {useNavigation} from '@react-navigation/native';
-import axios from 'axios';
+import { fontType, monochromeColors } from '../../theme';
+import { useNavigation } from '@react-navigation/native';
+import firestore from '@react-native-firebase/firestore';
 
 const Profile = () => {
   const navigation = useNavigation();
@@ -28,10 +28,12 @@ const Profile = () => {
   const getProducts = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(
-        'https://682a39cdab2b5004cb3635fa.mockapi.io/api/product',
-      );
-      setKontesList(response.data);
+      const snapshot = await firestore().collection('products').get();
+      const data = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setKontesList(data);
     } catch (error) {
       console.error('Gagal memuat produk:', error.message);
     } finally {
@@ -39,50 +41,43 @@ const Profile = () => {
     }
   };
 
-  // Ambil data saat pertama kali komponen muncul
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
-      getProducts(); // Panggil ulang saat halaman difokuskan kembali
+      getProducts();
     });
-    getProducts(); // Panggil pertama kali
+    getProducts();
     return unsubscribe;
   }, [navigation]);
 
-  const handleDelete = async id => {
+  const handleDelete = async (id) => {
     Alert.alert(
       'Konfirmasi',
       'Apakah Anda yakin ingin menghapus produk ini?',
       [
-        {
-          text: 'Batal',
-          style: 'cancel',
-        },
+        { text: 'Batal', style: 'cancel' },
         {
           text: 'Hapus',
           style: 'destructive',
           onPress: async () => {
             try {
-              await axios.delete(
-                `https://682a39cdab2b5004cb3635fa.mockapi.io/api/product/${id}`,
-              );
-              // Refresh data (bisa dengan getProduk() atau filter manual)
-              getProducts(); // pastikan kamu punya fungsi ini
+              await firestore().collection('products').doc(id).delete();
+              getProducts();
             } catch (error) {
               Alert.alert('Gagal', 'Produk gagal dihapus');
             }
           },
         },
       ],
-      {cancelable: true},
+      { cancelable: true }
     );
   };
 
-  const renderItem = ({item}) => (
+  const renderItem = ({ item }) => (
     <TouchableOpacity
       style={styles.itemContainer}
-      onPress={() => navigation.navigate('ProdukDetail', {productId: item.id})}>
-      <Image source={{uri: item.image}} style={styles.itemImage} />
-
+      onPress={() => navigation.navigate('ProdukDetail', { productId: item.id })}
+    >
+      <Image source={{ uri: item.image }} style={styles.itemImage} />
       <View style={styles.itemDetails}>
         <View style={styles.actionRow}>
           <View>
@@ -96,14 +91,15 @@ const Profile = () => {
             <TouchableOpacity
               style={styles.iconButton}
               onPress={() =>
-                navigation.navigate('EditProduk', {productId: item.id})
-              }>
+                navigation.navigate('EditProduk', { productId: item.id })
+              }
+            >
               <Edit2 size={20} color="#4CAF50" variant="Bold" />
             </TouchableOpacity>
-
             <TouchableOpacity
               style={styles.iconButton}
-              onPress={() => handleDelete(item.id)}>
+              onPress={() => handleDelete(item.id)}
+            >
               <Trash size={20} color="#F44336" variant="Bold" />
             </TouchableOpacity>
           </View>
@@ -153,6 +149,7 @@ const Profile = () => {
         <Text style={styles.name}>Albert Ross</Text>
         <Text style={styles.role}>Cupang Kontes</Text>
       </View>
+
       <View style={styles.sosialContainer}>
         <View style={styles.socialRow}>
           <DirectInbox size={28} color="#555" />
@@ -161,11 +158,9 @@ const Profile = () => {
         <View
           style={[
             styles.socialRow,
-            {
-              borderBottomWidth: 1,
-              borderColor: monochromeColors.grey(0.3),
-            },
-          ]}>
+            { borderBottomWidth: 1, borderColor: monochromeColors.grey(0.3) },
+          ]}
+        >
           <Home size={28} color="#555" />
           <Text style={styles.email}>6,894 Produk Terjual</Text>
         </View>
@@ -176,10 +171,10 @@ const Profile = () => {
         <FlatList
           horizontal
           data={kontesList}
-          renderItem={({item}) => (
-            <Image source={{uri: item.image}} style={styles.mediaImage} />
+          renderItem={({ item }) => (
+            <Image source={{ uri: item.image }} style={styles.mediaImage} />
           )}
-          keyExtractor={item => item.id}
+          keyExtractor={(item) => item.id}
           showsHorizontalScrollIndicator={false}
         />
       </View>
@@ -189,7 +184,8 @@ const Profile = () => {
           <Text style={styles.sectionTitle}>Product</Text>
           <TouchableOpacity
             style={styles.addButton}
-            onPress={() => navigation.navigate('AddProduk')}>
+            onPress={() => navigation.navigate('AddProduk')}
+          >
             <Text style={styles.addButtonText}>Add Product</Text>
           </TouchableOpacity>
         </View>
@@ -198,7 +194,7 @@ const Profile = () => {
           data={kontesList}
           scrollEnabled={false}
           renderItem={renderItem}
-          keyExtractor={item => item.id}
+          keyExtractor={(item) => item.id}
         />
       </View>
     </ScrollView>

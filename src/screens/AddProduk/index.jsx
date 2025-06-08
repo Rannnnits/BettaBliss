@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -8,10 +8,14 @@ import {
   ScrollView,
   Alert,
 } from 'react-native';
-import {fontType, monochromeColors} from '../../theme';
-import {useNavigation} from '@react-navigation/native';
-import {ArrowLeft} from 'iconsax-react-native';
-import axios from 'axios';
+import { useNavigation } from '@react-navigation/native';
+import { ArrowLeft } from 'iconsax-react-native';
+import {
+  addDoc,
+  collection,
+  getFirestore,
+} from '@react-native-firebase/firestore';
+import { fontType, monochromeColors } from '../../theme'; // Jika Anda menggunakan custom theme
 
 const AddProduk = () => {
   const [title, setTitle] = useState('');
@@ -30,29 +34,25 @@ const AddProduk = () => {
     try {
       const newProduct = {
         title,
-        category: 'Umum',
+        category: category || 'Umum',
         price: Number(price),
-        rating: '0',
+        rating: 0,
         sold: 0,
         image: imageUrl,
-        createdAt: new Date().toISOString(),
         amount: Number(quantity),
       };
 
-      const response = await axios.post(
-        'https://682a39cdab2b5004cb3635fa.mockapi.io/api/product',
-        newProduct,
-      );
+      const db = getFirestore();
+      await addDoc(collection(db, 'products'), newProduct);
 
-      if (response.status === 201) {
-        Alert.alert('Berhasil', 'Produk berhasil ditambahkan!');
-        navigation.goBack();
+      Alert.alert('Berhasil', 'Produk berhasil ditambahkan!');
+      navigation.goBack();
 
-        setTitle('');
-        setPrice('');
-        setQuantity('');
-        setImageUrl('');
-      }
+      setTitle('');
+      setPrice('');
+      setQuantity('');
+      setImageUrl('');
+      setCategory('');
     } catch (e) {
       Alert.alert('Gagal', `Terjadi kesalahan: ${e.message}`);
     }
@@ -74,10 +74,11 @@ const AddProduk = () => {
         value={title}
         onChangeText={setTitle}
       />
+
       <Text style={styles.label}>Kategori</Text>
       <TextInput
         style={styles.input}
-        placeholder="Contoh: Elektronik"
+        placeholder="Contoh: Halfmoon"
         value={category}
         onChangeText={setCategory}
       />
