@@ -15,7 +15,8 @@ import {
   collection,
   getFirestore,
 } from '@react-native-firebase/firestore';
-import { fontType, monochromeColors } from '../../theme'; // Jika Anda menggunakan custom theme
+import notifee from '@notifee/react-native';
+import { fontType, monochromeColors } from '../../theme'; // Abaikan jika tidak pakai custom theme
 
 const AddProduk = () => {
   const [title, setTitle] = useState('');
@@ -24,6 +25,26 @@ const AddProduk = () => {
   const [imageUrl, setImageUrl] = useState('');
   const [category, setCategory] = useState('');
   const navigation = useNavigation();
+
+  const displayNotification = async () => {
+    await notifee.requestPermission();
+
+    const channelId = await notifee.createChannel({
+      id: 'produk_channel',
+      name: 'Notifikasi Produk',
+    });
+
+    await notifee.displayNotification({
+      title: 'Produk Ditambahkan',
+      body: `Produk "${title}" berhasil disimpan.`,
+      android: {
+        channelId,
+        pressAction: {
+          id: 'default',
+        },
+      },
+    });
+  };
 
   const handleAddProduct = async () => {
     if (!title || !price || !quantity || !imageUrl) {
@@ -44,6 +65,8 @@ const AddProduk = () => {
 
       const db = getFirestore();
       await addDoc(collection(db, 'products'), newProduct);
+
+      await displayNotification(); // Tampilkan notifikasi
 
       Alert.alert('Berhasil', 'Produk berhasil ditambahkan!');
       navigation.goBack();
